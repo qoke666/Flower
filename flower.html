@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title id="page-title">Verdé · Цветы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#0d1511}
+body{font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;color:#1F2C27}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{display:none}
+
+:root{
+  --emerald:#2A5C4D;--gold:#D4B88A;--dark:#1F2C27;--cream:#F8F5F0;--beige:#F0EDE6;
+  --muted:rgba(31,44,39,0.45);--muted2:rgba(31,44,39,0.6);--line:rgba(31,44,39,0.08);
+  --danger:#b94040;
+  --clash:'Clash Display',sans-serif;--inter:'Inter',sans-serif;
+}
+
+/* ── APP SHELL ── */
+#app{
+  position:relative;width:min(390px,100vw);height:min(844px,100dvh);
+  margin:0 auto;background:var(--cream);
+  border-radius:clamp(0px,4vw,36px);overflow:hidden;
+  box-shadow:0 64px 128px rgba(0,0,0,.6),0 0 0 1px rgba(0,0,0,.08);
+  display:flex;flex-direction:column;
+}
+
+/* ── SCREENS ── */
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;display:none;background:var(--cream)}
+.screen.active{display:block}
+.screen.has-nav{padding-bottom:76px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes revealX{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0% 0 0)}}
+.anim-title{animation:revealX 700ms cubic-bezier(.16,1,.3,1) both}
+.anim-1{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 80ms both}
+.anim-2{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 180ms both}
+.anim-3{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 280ms both}
+.anim-4{animation:fadeUp 500ms cubic-bezier(.16,1,.3,1) 380ms both}
+
+/* ── EYEBROW / TITLES ── */
+.eyebrow{font-size:11px;font-weight:500;letter-spacing:6px;text-transform:uppercase;color:var(--gold)}
+.h-big{font-family:var(--clash);font-weight:700;color:var(--dark);line-height:1;letter-spacing:-1px}
+
+/* ── HEADER ── */
+.scr-head{padding:56px 24px 20px}
+
+/* ── HOME HERO (next order) ── */
+.hero{margin:0 16px;border-radius:18px;overflow:hidden;position:relative;height:216px;background:var(--dark)}
+.hero-img{position:absolute;right:0;top:-24px;height:240px;width:160px;object-fit:cover;z-index:1}
+.hero-fade{position:absolute;right:0;top:0;bottom:0;width:180px;z-index:2;
+  background:linear-gradient(to right,var(--dark) 0%,transparent 100%)}
+.hero-body{position:absolute;inset:0;padding:24px;display:flex;flex-direction:column;justify-content:space-between;z-index:3}
+
+/* ── CARD ── */
+.card{background:var(--beige);border-radius:16px}
+
+/* ── QUICK ACTIONS ── */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.qa-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 0;border-radius:12px;transition:opacity .2s}
+.qa-btn:active{opacity:.6}
+.qa-ico{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(42,92,77,0.09)}
+.qa-label{font-size:10px;text-align:center;line-height:1.15;font-weight:500;color:var(--dark)}
+
+/* ── FLORIST CARDS (horizontal) ── */
+.hscroll{display:flex;gap:12px;padding-left:24px;overflow-x:auto;scroll-snap-type:x mandatory}
+.hscroll::after{content:'';flex:0 0 12px}
+.florist-card{flex-shrink:0;width:200px;scroll-snap-align:start;background:var(--beige);border-radius:16px;overflow:hidden;text-align:left;transition:opacity .2s}
+.florist-card:active{opacity:.8}
+.florist-photo{position:relative;height:128px;overflow:hidden}
+.florist-photo img{width:100%;height:100%;object-fit:cover;filter:saturate(.82) brightness(.93)}
+.florist-photo .grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(31,44,39,.73) 0%,transparent 55%)}
+.florist-photo .cap{position:absolute;bottom:12px;left:12px;right:12px}
+
+/* ── SECTION HEAD ── */
+.sec-head{padding:0 24px;display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-size:17px;font-family:var(--clash);font-weight:700;color:var(--dark)}
+.sec-link{font-size:12px;font-weight:500;color:var(--emerald)}
+
+/* ── CATALOG ── */
+.searchbar{display:flex;align-items:center;gap:12px;padding:0 16px;height:48px;border-radius:12px;background:var(--beige);margin:0 16px}
+.searchbar input{flex:1;background:transparent;border:none;outline:none;font-size:14px;color:var(--dark)}
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding:0 16px;margin:16px 0 20px}
+.chip{flex-shrink:0;padding:7px 16px;border-radius:99px;font-size:12px;font-weight:500;background:var(--beige);color:var(--dark);transition:all .2s}
+.chip.active{background:var(--emerald);color:var(--cream)}
+.cat-lg{border-radius:18px;overflow:hidden;position:relative;height:252px;background:var(--beige);margin-bottom:12px}
+.cat-lg img{width:100%;height:100%;object-fit:cover}
+.cat-lg .grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(31,44,39,.87) 0%,transparent 48%)}
+.cat-lg .body{position:absolute;bottom:0;left:0;right:0;padding:20px}
+.cat-sm{flex:1;border-radius:18px;overflow:hidden;background:var(--beige)}
+.cat-sm .ph{height:130px;overflow:hidden}
+.cat-sm .ph img{width:100%;height:100%;object-fit:cover}
+
+/* ── RATE BOUQUET (signature screen) ── */
+#screen-rate .rate-wrap{padding:56px 20px 24px;min-height:100%;display:flex;flex-direction:column}
+.rate-photo-card{position:relative;border-radius:24px;overflow:hidden;background:var(--dark);flex:1;min-height:380px;margin-bottom:20px}
+.rate-photo-card img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.rate-photo-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(31,44,39,.85) 0%,transparent 45%)}
+.rate-photo-meta{position:absolute;bottom:0;left:0;right:0;padding:22px}
+.rate-actions{display:flex;gap:14px}
+.rate-btn{flex:1;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:16px;font-family:var(--clash);font-weight:600;transition:transform .15s,opacity .2s}
+.rate-btn:active{transform:scale(.96)}
+.rate-btn.like{background:var(--emerald);color:var(--cream)}
+.rate-btn.dislike{background:var(--beige);color:var(--dark);border:1.5px solid var(--line)}
+.rate-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px}
+.rate-empty-ico{width:72px;height:72px;border-radius:50%;background:rgba(42,92,77,.1);display:flex;align-items:center;justify-content:center;font-size:32px}
+
+/* redo comment box */
+.redo-box{margin-top:16px;animation:fadeUp .3s ease both}
+.redo-box textarea{width:100%;background:var(--beige);border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;font-size:14px;color:var(--dark);resize:none;height:72px;outline:none;margin-bottom:12px}
+.redo-box textarea:focus{border-color:var(--emerald)}
+
+/* ── FLORIST PROFILE ── */
+.fp-hero{position:relative;height:318px}
+.fp-hero img{width:100%;height:100%;object-fit:cover;filter:grayscale(55%) brightness(.88)}
+.fp-hero .tint{position:absolute;inset:0;background:rgba(42,92,77,.1);mix-blend-mode:multiply}
+.fp-hero .grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(31,44,39,.93) 0%,rgba(31,44,39,.27) 52%,transparent 100%)}
+.fp-back{position:absolute;top:48px;left:16px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(31,44,39,.52);backdrop-filter:blur(6px);color:var(--cream);font-size:20px}
+.fp-name{position:absolute;bottom:0;left:0;right:0;padding:0 24px 24px}
+.fp-spec-side{position:absolute;right:20px;top:28%;writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;letter-spacing:4px;font-weight:500;color:rgba(240,237,230,.35)}
+.fp-stats{margin:16px;border-radius:16px;overflow:hidden;background:var(--beige);display:grid;grid-template-columns:repeat(3,1fr)}
+.fp-stat{display:flex;flex-direction:column;align-items:center;padding:20px 0}
+.fp-stat:not(:last-child){border-right:1px solid var(--line)}
+.portfolio{display:flex;gap:8px;overflow-x:auto;padding-left:24px}
+.portfolio::after{content:'';flex:0 0 12px}
+.portfolio .pit{flex-shrink:0;width:110px;height:110px;border-radius:12px;overflow:hidden}
+.portfolio .pit img{width:100%;height:100%;object-fit:cover}
+
+/* ── CONTACTS ── */
+.contact-item{display:flex;align-items:center;gap:14px;background:var(--beige);border-radius:14px;
+  padding:16px 18px;margin-bottom:12px;text-decoration:none;transition:opacity .2s}
+.contact-item:active{opacity:.75}
+.contact-ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  font-size:20px;background:rgba(42,92,77,.1);flex-shrink:0}
+.contact-item h4{font-size:14px;font-weight:600;color:var(--dark);margin-bottom:2px}
+.contact-item p{font-size:12px;color:var(--muted)}
+
+/* ── PROFILE / LOYALTY ── */
+.level-track{position:relative;margin-top:6px}
+.benefit{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;background:var(--beige);margin-bottom:8px}
+
+/* ── BUILD (order flow) ── */
+.step-dots{display:flex;gap:6px;margin-top:16px}
+.step-dots .sd{height:3px;border-radius:99px;transition:all .4s;background:rgba(31,44,39,.14)}
+.occ-btn{width:100%;display:flex;align-items:center;justify-content:between;padding:14px 20px;border-radius:12px;background:var(--beige);margin-bottom:8px;transition:all .2s;justify-content:space-between}
+.occ-btn.sel{background:var(--dark)}
+.slot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.slot-cell{padding:14px;border-radius:12px;background:var(--beige);color:var(--dark);font-size:13px;font-weight:500;text-align:center;transition:all .2s}
+.slot-cell.sel{background:var(--emerald);color:var(--cream)}
+.date-cell{flex-shrink:0;display:flex;flex-direction:column;align-items:center;border-radius:12px;padding:12px 0;width:50px;background:var(--beige);transition:all .2s}
+.date-cell.sel{background:var(--emerald)}
+.primary-btn{width:100%;height:56px;border-radius:14px;background:var(--emerald);color:var(--cream);
+  font-family:var(--clash);font-weight:600;font-size:15px;letter-spacing:.3px;transition:opacity .2s}
+.primary-btn:active{opacity:.82}
+.primary-btn:disabled{opacity:.45}
+
+/* ── BOTTOM NAV ── */
+#bottom-nav{
+  position:absolute;bottom:0;left:0;right:0;height:64px;
+  background:rgba(248,245,240,.94);border-top:1px solid var(--line);
+  backdrop-filter:blur(14px);display:flex;align-items:center;padding:0 6px;z-index:50;
+}
+.nav-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  flex:1;height:56px;border-radius:12px;color:var(--muted);transition:color .2s;font-size:10px;letter-spacing:.02em}
+.nav-tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav-tab.active{color:var(--emerald)}
+.nav-tab.active .nav-label{font-weight:600}
+
+/* ── SPLASH ── */
+#splash{position:absolute;inset:0;z-index:100;pointer-events:none;overflow:hidden}
+.splash-half{position:absolute;left:0;right:0;background:var(--dark);display:flex;flex-direction:column;align-items:center;overflow:hidden;transition:transform .6s cubic-bezier(.77,0,.175,1)}
+#splash-top{top:0;height:50%;justify-content:flex-end;padding-bottom:12px}
+#splash-bot{bottom:0;height:50%;justify-content:flex-start;padding-top:12px}
+#splash.split #splash-top{transform:translateY(-100%)}
+#splash.split #splash-bot{transform:translateY(100%)}
+.splash-tagline{font-size:11px;font-weight:500;letter-spacing:8px;color:var(--gold);margin-bottom:16px;
+  clip-path:inset(0 100% 0 0)}
+.splash-tagline.show{animation:revealX .55s ease forwards}
+.splash-logo{display:flex;overflow:hidden}
+.splash-logo span{font-size:64px;font-family:var(--clash);font-weight:700;color:var(--beige);line-height:1;
+  transform:translateY(110%);opacity:0}
+.splash-logo span.show{animation:letterUp .5s cubic-bezier(.77,0,.175,1) forwards}
+@keyframes letterUp{to{transform:translateY(0);opacity:1}}
+.splash-sub{font-size:16px;font-weight:300;letter-spacing:3px;color:var(--gold);opacity:0;transform:translateY(20px)}
+.splash-sub.show{animation:fadeUp .5s ease forwards}
+
+/* ── TOAST ── */
+#toast{position:absolute;bottom:80px;left:16px;right:16px;background:var(--dark);
+  border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:10px;z-index:200;
+  opacity:0;transform:translateY(12px);transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none}
+#toast.visible{opacity:1;transform:translateY(0)}
+.toast-ico{font-size:16px;flex-shrink:0}
+.toast-msg{font-size:13px;color:var(--cream);line-height:1.4}
+
+/* ── MODAL ── */
+.modal-overlay{position:absolute;inset:0;background:rgba(31,44,39,.55);backdrop-filter:blur(6px);
+  z-index:150;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal-sheet{background:var(--cream);border-radius:22px 22px 0 0;padding:22px 20px 36px;width:100%;
+  transform:translateY(100%);transition:transform .32s cubic-bezier(.16,1,.3,1)}
+.modal-overlay.open .modal-sheet{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 18px}
+.form-label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase}
+.form-input,.form-select{width:100%;background:var(--beige);border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;color:var(--dark);font-size:14px;margin-bottom:14px;outline:none;-webkit-appearance:none}
+.form-input:focus,.form-select:focus{border-color:var(--emerald)}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- screens injected below -->
+  <!-- ═══ HOME ═══ -->
+  <div id="screen-home" class="screen has-nav active"></div>
+  <!-- ═══ CATALOG ═══ -->
+  <div id="screen-catalog" class="screen has-nav"></div>
+  <!-- ═══ RATE (signature) ═══ -->
+  <div id="screen-rate" class="screen has-nav"></div>
+  <!-- ═══ BUILD / ORDER ═══ -->
+  <div id="screen-build" class="screen has-nav"></div>
+  <!-- ═══ PROFILE ═══ -->
+  <div id="screen-profile" class="screen has-nav"></div>
+  <!-- ═══ CONTACTS ═══ -->
+  <div id="screen-contacts" class="screen has-nav"></div>
+  <!-- ═══ FLORIST PROFILE (no nav) ═══ -->
+  <div id="screen-florist" class="screen"></div>
+
+  <!-- ═══ BOTTOM NAV ═══ -->
+  <nav id="bottom-nav">
+    <button class="nav-tab active" data-screen="home" onclick="navigate('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>
+      <span class="nav-label">Главная</span>
+    </button>
+    <button class="nav-tab" data-screen="catalog" onclick="navigate('catalog')">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      <span class="nav-label">Каталог</span>
+    </button>
+    <button class="nav-tab" data-screen="rate" onclick="navigate('rate')">
+      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>
+      <span class="nav-label">Оценить</span>
+    </button>
+    <button class="nav-tab" data-screen="build" onclick="navigate('build')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+      <span class="nav-label">Заказ</span>
+    </button>
+    <button class="nav-tab" data-screen="profile" onclick="navigate('profile')">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span class="nav-label">Профиль</span>
+    </button>
+    <button class="nav-tab" data-screen="contacts" onclick="navigate('contacts')">
+      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.62A2 2 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+      <span class="nav-label">Контакты</span>
+    </button>
+  </nav>
+
+  <!-- ═══ SPLASH ═══ -->
+  <div id="splash">
+    <div class="splash-half" id="splash-top">
+      <p class="splash-tagline" id="splash-tagline">FLOWERS · RITUAL</p>
+      <div class="splash-logo" id="splash-logo"></div>
+    </div>
+    <div class="splash-half" id="splash-bot">
+      <p class="splash-sub" id="splash-sub">Твой букет ждёт</p>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST ═══ -->
+  <div id="toast"><span class="toast-ico" id="toast-ico">✓</span><span class="toast-msg" id="toast-msg"></span></div>
+
+  <!-- ═══ ADD CONTACT MODAL placeholder ═══ -->
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+/* =====================================================================
+ *  CONFIG — всё, что редактируется, здесь
+ * ===================================================================== */
+const CONFIG = {
+  pageTitle: 'Verdé · Цветы',
+  brand:     'VERDÉ',
+  userName:  'Анна',
+  userPhoto: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&auto=format',
+
+  // Backend (Google Apps Script Web App). Вставишь свой URL после деплоя.
+  backendUrl: '',
+
+  // Флористы
+  florists: [
+    { id:1, name:'Мария Елисеева', spec:'Сезонные композиции', exp:'7 лет', rating:4.9, reviews:128,
+      img:'https://images.unsplash.com/photo-1559599101-f09722fb4948?w=400&h=500&fit=crop&auto=format',
+      quote:'Цветы — это живой язык чувств. Каждый букет я собираю как письмо.',
+      phone:'+79991234567', telegram:'https://t.me/verde_maria' },
+    { id:2, name:'Алексей Нарин', spec:'Минимализм · Концепт', exp:'5 лет', rating:4.8, reviews:94,
+      img:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop&auto=format',
+      quote:'В простоте — высшая красота. Один стебель скажет больше сотни.',
+      phone:'+79991234568', telegram:'https://t.me/verde_alex' },
+    { id:3, name:'Саша Орлова', spec:'Сухоцветы · Эко-стиль', exp:'4 года', rating:4.9, reviews:87,
+      img:'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=500&fit=crop&auto=format',
+      quote:'Я работаю с природой, а не против неё. Каждая травинка — часть истории.',
+      phone:'+79991234569', telegram:'https://t.me/verde_sasha' },
+  ],
+
+  // Каталог
+  catalog: [
+    { id:1, name:'Пионовый рассвет', desc:'Пионы, эвкалипт, гипсофила', price:4800, fresh:'5–7 дней',
+      img:'https://images.unsplash.com/photo-1490750967868-88df5691cc64?w=600&h=800&fit=crop&auto=format' },
+    { id:2, name:'Лесное эхо', desc:'Сухоцветы, лаванда, ковыль', price:3200, fresh:'30+ дней',
+      img:'https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?w=400&h=400&fit=crop&auto=format' },
+    { id:3, name:'Первый снег', desc:'Ранункулюс, хлопок, амариллис', price:5400, fresh:'4–6 дней',
+      img:'https://images.unsplash.com/photo-1455659817273-f96807779a8a?w=400&h=400&fit=crop&auto=format' },
+    { id:4, name:'Золотой час', desc:'Мимоза, тюльпан, зелень', price:3800, fresh:'4–5 дней',
+      img:'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&h=700&fit=crop&auto=format' },
+    { id:5, name:'Тихий сад', desc:'Розы, астры, буддлея', price:4200, fresh:'6–8 дней',
+      img:'https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=400&h=400&fit=crop&auto=format' },
+    { id:6, name:'Северный лес', desc:'Эвкалипт, шишки, листья', price:2800, fresh:'21+ дней',
+      img:'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=400&h=400&fit=crop&auto=format' },
+  ],
+  catalogFilters: ['Все','Сезонные','Сухоцветы','Свежие','Моно'],
+
+  // Избранное на главной — витрина, которой управляешь ты (правь этот список).
+  // Позже CRM-апка сможет отдавать этот же массив с backend — структура уже готова.
+  featured: [
+    { id:1, name:'Пионовый рассвет', desc:'Пионы, эвкалипт, гипсофила', price:4800, badge:'Хит',
+      img:'https://images.unsplash.com/photo-1490750967868-88df5691cc64?w=600&h=800&fit=crop&auto=format' },
+    { id:4, name:'Золотой час', desc:'Мимоза, тюльпан, зелень', price:3800, badge:'Сезон',
+      img:'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=600&h=700&fit=crop&auto=format' },
+    { id:3, name:'Первый снег', desc:'Ранункулюс, хлопок, амариллис', price:5400, badge:'',
+      img:'https://images.unsplash.com/photo-1455659817273-f96807779a8a?w=400&h=400&fit=crop&auto=format' },
+    { id:5, name:'Тихий сад', desc:'Розы, астры, буддлея', price:4200, badge:'',
+      img:'https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=400&h=400&fit=crop&auto=format' },
+  ],
+
+  occasions: [
+    {id:'her',label:'Для неё'},{id:'him',label:'Для него'},{id:'birthday',label:'День рождения'},
+    {id:'wedding',label:'Свадьба'},{id:'anniversary',label:'Юбилей'},{id:'office',label:'Офис'},
+    {id:'seasonal',label:'Сезонные'},{id:'grief',label:'Траурные'},
+  ],
+  deliverySlots: ['09:00–12:00','12:00–15:00','15:00–18:00','18:00–21:00'],
+
+  // Лояльность
+  levels: [
+    {name:'Seed',range:'0–400',min:0},{name:'Sprout',range:'400–1200',min:400},
+    {name:'Olive',range:'1200–2800',min:1200,current:true},{name:'Blossom',range:'2800+',min:2800},
+  ],
+  userPoints: 1240,
+
+  // Контакты магазина
+  contacts: [
+    { icon:'💬', label:'Telegram магазина', sub:'Ответим за пару минут', href:'https://t.me/verde_shop' },
+    { icon:'📞', label:'+7 (999) 123-45-67', sub:'Звонок или WhatsApp', href:'tel:+79991234567' },
+    { icon:'📍', label:'ул. Цветочная, 7', sub:'Мастерская Verdé', href:'#' },
+    { icon:'🕐', label:'Ежедневно 09:00–21:00', sub:'Часы работы', href:'#' },
+  ],
+
+  // Демо-букет для оценки, когда backend пуст (чтобы экран не был пустым при показе)
+  demoRateBouquet: {
+    booking_id:'DEMO', photo:'https://images.unsplash.com/photo-1490750967868-88df5691cc64?w=800&h=1000&fit=crop&auto=format',
+    florist:'Мария Елисеева', order_label:'Демо · Пионовый рассвет'
+  },
+
+  seasonBanner: {
+    img:'https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=600&h=300&fit=crop&auto=format',
+    eyebrow:'СЕЗОН · ИЮЛЬ', title:'Пионы & Эвкалипт', sub:'Ограниченная поставка'
+  },
+};
+
+/* =====================================================================
+ *  STATE
+ * ===================================================================== */
+const S = {
+  screen:'home',
+  profileFlorist:CONFIG.florists[0],
+  // build flow
+  buildStep:1, occasion:null, floristId:null, date:null, slot:null, confirmed:false,
+  // rate flow
+  pendingRate:null,   // {booking_id, photo, florist, order_label}
+  rateChoice:null,    // 'like' | 'dislike'
+  rateSubmitting:false,
+  // user
+  visits:0,
+};
+
+const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
+const userId = String(tgUser.id || 'guest');
+if(window.Telegram?.WebApp){ window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); }
+document.getElementById('page-title').textContent = CONFIG.pageTitle;
+
+/* =====================================================================
+ *  HELPERS
+ * ===================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money = n => Number(n).toLocaleString('ru');
+
+/* =====================================================================
+ *  SPLASH
+ * ===================================================================== */
+function runSplash(){
+  const logo=$('splash-logo');
+  logo.innerHTML=[...CONFIG.brand].map(l=>`<span>${l}</span>`).join('');
+  const letters=logo.querySelectorAll('span');
+  setTimeout(()=>$('splash-tagline').classList.add('show'),420);
+  setTimeout(()=>letters.forEach((s,i)=>setTimeout(()=>s.classList.add('show'),i*60)),920);
+  setTimeout(()=>$('splash-sub').classList.add('show'),2080);
+  setTimeout(()=>$('splash').classList.add('split'),2680);
+  setTimeout(()=>{ $('splash').style.display='none'; },3300);
+}
+
+/* =====================================================================
+ *  NAVIGATION
+ * ===================================================================== */
+function navigate(name){
+  if(name===S.screen && name!=='florist') return;
+  $('screen-'+S.screen)?.classList.remove('active');
+  $('screen-'+name)?.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.toggle('active',b.dataset.screen===name));
+  // hide bottom nav on florist detail
+  $('bottom-nav').style.display = (name==='florist') ? 'none' : 'flex';
+  S.screen=name;
+  const r={home:renderHome,catalog:renderCatalog,rate:renderRate,build:renderBuild,
+           profile:renderProfile,contacts:renderContacts}[name];
+  if(r) r();
+  $('screen-'+name).scrollTop=0;
+}
+
+function openFlorist(f){ S.profileFlorist=f; renderFlorist(); navigate('florist'); }
+
+/* =====================================================================
+ *  HOME
+ * ===================================================================== */
+function renderHome(){
+  const s=$('screen-home');
+  const f0=CONFIG.florists[0];
+  const progress=(CONFIG.userPoints-1200)/(2800-1200);
+  const circ=2*Math.PI*31;
+  s.innerHTML=`
+    <div class="scr-head" style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div style="flex:1;min-width:0;padding-right:12px">
+        <p class="eyebrow anim-title" style="margin-bottom:6px">${esc(CONFIG.brand)} · ФЛОРУМ</p>
+        <h1 class="h-big anim-title" style="font-size:44px;white-space:nowrap">Привет, ${esc(CONFIG.userName)}</h1>
+      </div>
+      <div class="anim-1" style="margin-top:4px;width:46px;height:46px;border-radius:50%;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 2px var(--gold)">
+        <img src="${CONFIG.userPhoto}" alt="" style="width:100%;height:100%;object-fit:cover">
+      </div>
+    </div>
+
+    <!-- Next order hero -->
+    <div class="hero anim-1">
+      <img class="hero-img" src="https://images.unsplash.com/photo-1490750967868-88df5691cc64?w=400&h=320&fit=crop&auto=format" alt="">
+      <div class="hero-fade"></div>
+      <div class="hero-body">
+        <div>
+          <p class="eyebrow" style="letter-spacing:5px;margin-bottom:8px">СЛЕДУЮЩИЙ ЗАКАЗ</p>
+          <p class="h-big" style="font-size:34px;color:var(--beige)">Завтра</p>
+          <p class="h-big" style="font-size:34px;color:var(--beige)">14:00–17:00</p>
+        </div>
+        <p style="font-size:13px;color:var(--gold)">Пионовый рассвет · Мария Е.</p>
+      </div>
+    </div>
+
+    <!-- Loyalty -->
+    <div class="card anim-2" style="margin:12px 16px 0;padding:20px;display:flex;align-items:center;gap:16px">
+      <svg width="76" height="76" viewBox="0 0 76 76" style="flex-shrink:0">
+        <circle cx="38" cy="38" r="31" fill="none" stroke="rgba(31,44,39,0.1)" stroke-width="5"/>
+        <circle cx="38" cy="38" r="31" fill="none" stroke="var(--emerald)" stroke-width="5" stroke-linecap="round"
+          stroke-dasharray="${circ*progress} ${circ}" transform="rotate(-90 38 38)"/>
+        <text x="38" y="34" text-anchor="middle" font-size="15" font-weight="700" fill="var(--emerald)" font-family="'Clash Display',sans-serif">${CONFIG.userPoints}</text>
+        <text x="38" y="50" text-anchor="middle" font-size="8" fill="var(--gold)" letter-spacing="1">OLIVE</text>
+      </svg>
+      <div style="flex:1;min-width:0">
+        <p style="font-size:13px;font-weight:500;color:var(--dark);line-height:1.35">Ещё <span style="color:var(--emerald)">${2800-CONFIG.userPoints} баллов</span> до Blossom</p>
+        <p style="font-size:11px;margin-top:4px;color:var(--muted)">+120 за прошлый заказ · +80 за отзыв</p>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div style="margin:16px 16px 0">
+      <div class="qa-grid">
+        <button class="qa-btn anim-2" onclick="navigate('build')"><div class="qa-ico">🌸</div><span class="qa-label">Собрать букет</span></button>
+        <button class="qa-btn anim-2" onclick="navigate('rate')"><div class="qa-ico">💚</div><span class="qa-label">Оценить букет</span></button>
+        <button class="qa-btn anim-3" onclick="navigate('catalog')"><div class="qa-ico">📖</div><span class="qa-label">Каталог</span></button>
+        <button class="qa-btn anim-3" onclick="navigate('contacts')"><div class="qa-ico">✉️</div><span class="qa-label">Контакты</span></button>
+      </div>
+    </div>
+
+    <!-- Featured bouquets -->
+    <div style="margin-top:26px">
+      <div class="sec-head anim-3"><h2 class="sec-title">Избранное</h2>
+        <button class="sec-link" onclick="navigate('catalog')">Каталог →</button></div>
+      <div class="hscroll anim-3" id="home-featured"></div>
+    </div>
+
+    <!-- Season banner -->
+    <div style="margin:16px 16px 24px;border-radius:18px;overflow:hidden;position:relative;height:148px" class="anim-4">
+      <img src="${CONFIG.seasonBanner.img}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" alt="">
+      <div style="position:absolute;inset:0;background:linear-gradient(115deg,rgba(31,44,39,.87) 0%,rgba(31,44,39,.33) 60%,transparent 100%)"></div>
+      <div style="position:absolute;inset:0;padding:20px;display:flex;flex-direction:column;justify-content:flex-end">
+        <p class="eyebrow" style="letter-spacing:5px;margin-bottom:4px">${esc(CONFIG.seasonBanner.eyebrow)}</p>
+        <p style="font-size:20px;font-family:var(--clash);font-weight:700;color:#fff">${esc(CONFIG.seasonBanner.title)}</p>
+        <p style="font-size:12px;margin-top:4px;color:rgba(240,237,230,.65)">${esc(CONFIG.seasonBanner.sub)}</p>
+      </div>
+    </div>`;
+
+  const fl=$('home-featured');
+  fl.innerHTML=CONFIG.featured.map(b=>`
+    <button class="florist-card" onclick="navigate('catalog')">
+      <div class="florist-photo" style="height:150px"><img src="${b.img}" alt="" style="filter:none">
+        <div class="grad"></div>
+        ${b.badge?`<span style="position:absolute;top:10px;left:10px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--dark);background:var(--gold);padding:4px 10px;border-radius:99px">${esc(b.badge)}</span>`:''}
+        <div class="cap"><p style="font-size:14px;font-weight:600;color:#fff;line-height:1.15">${esc(b.name)}</p></div>
+      </div>
+      <div style="padding:12px">
+        <p style="font-size:11px;line-height:1.4;color:var(--muted);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden">${esc(b.desc)}</p>
+        <p style="font-size:16px;font-family:var(--clash);font-weight:700;color:var(--emerald);margin-top:8px">${money(b.price)} ₽</p>
+      </div>
+    </button>`).join('');
+}
+
+/* =====================================================================
+ *  CATALOG
+ * ===================================================================== */
+function renderCatalog(){
+  const s=$('screen-catalog');
+  s.innerHTML=`
+    <div class="scr-head" style="padding-bottom:16px">
+      <p class="eyebrow anim-title" style="margin-bottom:6px">${esc(CONFIG.brand)} · КАТАЛОГ</p>
+      <h1 class="h-big anim-title" style="font-size:38px">Все букеты</h1>
+    </div>
+    <div class="searchbar anim-1">
+      <span style="color:rgba(31,44,39,.38);font-size:15px">⌕</span>
+      <input type="text" placeholder="Состав, повод, флорист…">
+    </div>
+    <div class="filter-row anim-1" id="cat-filters"></div>
+    <div style="padding:0 16px 24px" id="cat-grid"></div>`;
+
+  $('cat-filters').innerHTML=CONFIG.catalogFilters.map((f,i)=>
+    `<button class="chip${i===0?' active':''}" onclick="setCatFilter(this)">${esc(f)}</button>`).join('');
+
+  const g=$('cat-grid'); const c=CONFIG.catalog; let html='';
+  [[0,1,2],[3,4,5]].forEach((group,gi)=>{
+    const lg=c[group[0]], sm=[c[group[1]],c[group[2]]].filter(Boolean);
+    if(!lg) return;
+    html+=`<div class="cat-lg anim-${gi+1}"><img src="${lg.img}" alt=""><div class="grad"></div>
+      <div class="body"><p style="font-size:21px;font-family:var(--clash);font-weight:700;color:#fff;line-height:1.1">${esc(lg.name)}</p>
+      <p style="font-size:12px;margin-top:2px;color:var(--gold)">${esc(lg.desc)}</p>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:12px">
+        <p style="font-size:20px;font-family:var(--clash);font-weight:700;color:#fff">${money(lg.price)} ₽</p>
+        <p style="font-size:11px;color:rgba(240,237,230,.55)">${esc(lg.fresh)}</p></div></div></div>
+      <div style="display:flex;gap:12px;margin-bottom:12px">`;
+    sm.forEach(it=>{ html+=`<div class="cat-sm"><div class="ph"><img src="${it.img}" alt=""></div>
+      <div style="padding:12px"><p style="font-size:13px;font-weight:600;color:var(--dark);line-height:1.15">${esc(it.name)}</p>
+      <p style="font-size:11px;margin-top:2px;color:var(--muted);line-height:1.2">${esc(it.desc)}</p>
+      <p style="font-size:15px;font-weight:700;margin-top:8px;color:var(--emerald)">${money(it.price)} ₽</p></div></div>`; });
+    html+=`</div>`;
+  });
+  g.innerHTML=html;
+}
+function setCatFilter(btn){
+  document.querySelectorAll('#cat-filters .chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* =====================================================================
+ *  RATE BOUQUET — signature screen
+ * ===================================================================== */
+async function renderRate(){
+  const s=$('screen-rate');
+  s.innerHTML=`<div class="rate-wrap">
+    <p class="eyebrow anim-title" style="margin-bottom:6px">${esc(CONFIG.brand)} · ВАШ БУКЕТ</p>
+    <h1 class="h-big anim-title" style="font-size:34px;margin-bottom:20px">Готов к доставке</h1>
+    <div id="rate-content" style="flex:1;display:flex;flex-direction:column">
+      <div class="rate-empty"><div class="rate-empty-ico">🌿</div>
+        <p style="font-size:14px;color:var(--muted2)">Загружаем ваш букет…</p></div>
+    </div>
+  </div>`;
+
+  let b=null;
+  try{
+    const res=await apiFetch('GET',`?event=get_pending_rate&user_id=${userId}`);
+    if(res && res.booking_id) b=res;
+  }catch(e){ /* offline */ }
+
+  // Фолбэк на демо, чтобы экран было видно (в проде можно убрать)
+  if(!b) b=CONFIG.demoRateBouquet;
+  S.pendingRate=b; S.rateChoice=null;
+  renderRateCard();
+}
+
+function renderRateCard(){
+  const c=$('rate-content'); if(!c) return;
+  const b=S.pendingRate;
+  if(!b){
+    c.innerHTML=`<div class="rate-empty"><div class="rate-empty-ico">✓</div>
+      <p style="font-size:16px;font-family:var(--clash);font-weight:600;color:var(--dark)">Всё оценено</p>
+      <p style="font-size:13px;color:var(--muted2);max-width:240px">Когда флорист пришлёт фото нового букета, он появится здесь.</p></div>`;
+    return;
+  }
+  c.innerHTML=`
+    <div class="rate-photo-card anim-1">
+      <img src="${b.photo}" alt="Ваш букет">
+      <div class="rate-photo-grad"></div>
+      <div class="rate-photo-meta">
+        <p class="eyebrow" style="letter-spacing:4px;margin-bottom:6px">СОБРАЛ ФЛОРИСТ</p>
+        <p style="font-size:22px;font-family:var(--clash);font-weight:700;color:#fff;line-height:1.1">${esc(b.florist||'Флорист Verdé')}</p>
+        ${b.order_label?`<p style="font-size:12px;margin-top:4px;color:var(--gold)">${esc(b.order_label)}</p>`:''}
+      </div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--muted2);margin-bottom:16px" class="anim-2">Нравится, как получилось? Подтвердите — и мы отправим на доставку.</p>
+    <div class="rate-actions anim-2">
+      <button class="rate-btn dislike" onclick="chooseRate('dislike')">🔄 Переделать</button>
+      <button class="rate-btn like" onclick="chooseRate('like')">💚 Нравится</button>
+    </div>
+    <div id="redo-slot"></div>`;
+}
+
+function chooseRate(choice){
+  S.rateChoice=choice;
+  if(choice==='like'){ submitRate(''); return; }
+  // dislike → показать поле комментария
+  const slot=$('redo-slot');
+  slot.innerHTML=`<div class="redo-box">
+    <textarea id="redo-comment" placeholder="Что поправить? Цвет, размер, состав…"></textarea>
+    <button class="primary-btn" style="background:var(--dark)" onclick="submitRate(document.getElementById('redo-comment').value.trim())">Отправить на переделку</button>
+  </div>`;
+  $('redo-comment').focus();
+}
+
+async function submitRate(comment){
+  if(S.rateSubmitting || !S.pendingRate) return;
+  S.rateSubmitting=true;
+  const b=S.pendingRate, choice=S.rateChoice;
+
+  try{
+    if(b.booking_id!=='DEMO'){
+      await apiFetch('POST',null,{
+        event:'rate_bouquet', user_id:userId,
+        username:tgUser.username||'', first_name:tgUser.first_name||'',
+        booking_id:b.booking_id, choice, comment:comment||''
+      });
+    }
+    showToast(choice==='like'?'Букет одобрен — везём вам! 💚':'Отправили флористу на переделку','ok');
+    S.pendingRate=null; S.rateSubmitting=false;
+    renderRateCard();
+  }catch(e){
+    S.rateSubmitting=false;
+    showToast('Не удалось отправить. Попробуйте ещё раз','err');
+  }
+}
+
+/* =====================================================================
+ *  BUILD / ORDER
+ * ===================================================================== */
+function renderBuild(){
+  const s=$('screen-build');
+  if(S.confirmed){ renderBuildConfirmed(s); return; }
+  s.innerHTML=`
+    <div class="scr-head" style="padding-bottom:0">
+      <p class="eyebrow anim-title" style="margin-bottom:6px">${esc(CONFIG.brand)} · ЗАКАЗ</p>
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <h1 class="h-big anim-title" style="font-size:32px">Создать заказ</h1>
+        <span style="font-size:13px;color:var(--muted)">${S.buildStep} / 4</span>
+      </div>
+      <div class="step-dots">
+        ${[1,2,3,4].map(n=>`<div class="sd" style="flex:${n===S.buildStep?3:1};background:${n<=S.buildStep?'var(--emerald)':'rgba(31,44,39,.14)'}"></div>`).join('')}
+      </div>
+    </div>
+    <div style="padding:20px 16px 0" id="build-step"></div>
+    <div style="display:flex;gap:12px;padding:24px 16px" >
+      ${S.buildStep>1?`<button onclick="buildBack()" style="width:48px;height:56px;border-radius:14px;background:var(--beige);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--dark);flex-shrink:0">←</button>`:''}
+      <button class="primary-btn" onclick="buildNext()">${S.buildStep<4?'Далее':'Подтвердить заказ'}</button>
+    </div>`;
+  renderBuildStep();
+}
+function renderBuildStep(){
+  const el=$('build-step'); const st=S.buildStep;
+  if(st===1){
+    el.innerHTML=`<p style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:12px;padding-left:4px">Выберите повод</p>`+
+      CONFIG.occasions.map(o=>`<button class="occ-btn${S.occasion===o.id?' sel':''}" onclick="pickOcc('${o.id}')">
+        <span style="font-size:15px;font-weight:500;color:${S.occasion===o.id?'var(--cream)':'var(--dark)'}">${esc(o.label)}</span>
+        ${S.occasion===o.id?'<span style="width:4px;height:20px;border-radius:99px;background:var(--gold)"></span>':''}</button>`).join('');
+  } else if(st===2){
+    el.innerHTML=`<p style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:12px;padding-left:4px">Выберите флориста</p>
+      <div style="display:flex;flex-direction:column;gap:10px">`+
+      CONFIG.florists.map(f=>`<button onclick="pickFlorist(${f.id})" style="display:flex;align-items:center;gap:14px;padding:12px;border-radius:16px;background:var(--beige);text-align:left;outline:${S.floristId===f.id?'2px solid var(--emerald)':'2px solid transparent'}">
+        <div style="width:56px;height:56px;border-radius:12px;overflow:hidden;flex-shrink:0"><img src="${f.img}" style="width:100%;height:100%;object-fit:cover" alt=""></div>
+        <div style="flex:1"><p style="font-size:14px;font-weight:600;color:var(--dark)">${esc(f.name)}</p>
+        <p style="font-size:12px;color:var(--muted)">${esc(f.spec)}</p>
+        <p style="font-size:12px;color:var(--emerald);margin-top:2px">★ ${f.rating} · ${f.reviews} отзывов</p></div>
+        ${S.floristId===f.id?'<span style="width:26px;height:26px;border-radius:50%;background:var(--emerald);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px">✓</span>':''}</button>`).join('')+`</div>`;
+  } else if(st===3){
+    const dates=[]; const now=new Date();
+    const dn=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+    for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()+i);dates.push({day:i===0?'Сег':dn[d.getDay()],date:d.getDate()});}
+    el.innerHTML=`<p style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:12px;padding-left:4px">Дата доставки</p>
+      <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:24px">`+
+      dates.map(d=>`<button class="date-cell${S.date===d.date?' sel':''}" onclick="pickDate(${d.date})">
+        <span style="font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:${S.date===d.date?'rgba(240,237,230,.55)':'var(--muted)'}">${d.day}</span>
+        <span style="font-size:22px;font-family:var(--clash);font-weight:700;margin-top:2px;color:${S.date===d.date?'var(--cream)':'var(--dark)'}">${d.date}</span></button>`).join('')+`</div>
+      <p style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:12px;padding-left:4px">Время</p>
+      <div class="slot-grid">`+
+      CONFIG.deliverySlots.map(sl=>`<button class="slot-cell${S.slot===sl?' sel':''}" onclick="pickSlot('${sl}')">${sl}</button>`).join('')+`</div>`;
+  } else {
+    const f=CONFIG.florists.find(x=>x.id===S.floristId);
+    const o=CONFIG.occasions.find(x=>x.id===S.occasion);
+    el.innerHTML=`<div class="card" style="padding:20px;margin-bottom:16px">
+      ${[['Повод',o?o.label:'—'],['Флорист',f?f.name:'—'],['Доставка',(S.date&&S.slot)?`${S.date} июля, ${S.slot}`:'—']]
+        .map((r,i,a)=>`<div style="display:flex;justify-content:space-between;padding:${i?'14px':'0'} 0 0">
+          <span style="font-size:13px;color:var(--muted)">${r[0]}</span>
+          <span style="font-size:14px;font-weight:500;color:var(--dark)">${esc(r[1])}</span></div>
+          ${i<a.length-1?'<div style="height:1px;background:var(--line);margin-top:14px"></div>':''}`).join('')}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px">
+      <span style="font-size:14px;color:var(--muted)">Итого</span>
+      <span style="font-size:26px;font-family:var(--clash);font-weight:700;color:var(--emerald)">4 800 ₽</span></div>`;
+  }
+}
+function pickOcc(id){S.occasion=id;renderBuildStep();}
+function pickFlorist(id){S.floristId=id;renderBuildStep();}
+function pickDate(d){S.date=d;renderBuildStep();}
+function pickSlot(sl){S.slot=sl;renderBuildStep();}
+function buildBack(){if(S.buildStep>1){S.buildStep--;renderBuild();}}
+function buildNext(){
+  if(S.buildStep<4){S.buildStep++;renderBuild();}
+  else{ submitOrder(); }
+}
+function renderBuildConfirmed(s){
+  s.innerHTML=`<div class="scr-head"><p class="eyebrow" style="margin-bottom:6px">${esc(CONFIG.brand)} · ЗАКАЗ</p>
+    <h1 class="h-big" style="font-size:32px">Заказ принят</h1></div>
+    <div style="padding:0 16px">
+      <div style="border-radius:22px;overflow:hidden;position:relative;height:192px;background:var(--dark);margin-bottom:16px">
+        <img src="https://images.unsplash.com/photo-1490750967868-88df5691cc64?w=400&h=200&fit=crop&auto=format" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25" alt="">
+        <div style="position:relative;z-index:1;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--emerald);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff">✓</div>
+          <p style="font-size:22px;font-family:var(--clash);font-weight:700;color:#fff">Заказ оформлен!</p>
+          <p style="font-size:13px;color:var(--gold)">№ VRD-2024-0847</p>
+        </div>
+      </div>
+      <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:8px">
+        <span style="font-size:18px">🚚</span><div><p style="font-size:13px;font-weight:500;color:var(--dark)">Доставка ${S.date||3} июля, ${S.slot||'14:00–17:00'}</p>
+        <p style="font-size:12px;color:var(--muted)">Флорист соберёт букет</p></div></div>
+      <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:20px">
+        <span style="font-size:18px">🎁</span><div><p style="font-size:13px;font-weight:500;color:var(--dark)">+96 баллов начислено</p>
+        <p style="font-size:12px;color:var(--muted)">За заказ от 4 800 ₽</p></div></div>
+      <button class="primary-btn" onclick="resetBuild()">Новый заказ</button>
+    </div>`;
+}
+function resetBuild(){S.confirmed=false;S.buildStep=1;S.occasion=null;S.floristId=null;S.date=null;S.slot=null;renderBuild();}
+
+async function submitOrder(){
+  const f=CONFIG.florists.find(x=>x.id===S.floristId);
+  const o=CONFIG.occasions.find(x=>x.id===S.occasion);
+  const bookingId=`BK_${Date.now()}_${Math.random().toString(36).substr(2,5).toUpperCase()}`;
+  try{
+    await apiFetch('POST',null,{
+      event:'order_submit', user_id:userId,
+      username:tgUser.username||'', first_name:tgUser.first_name||'',
+      timestamp:new Date().toISOString(),
+      order:{ booking_id:bookingId, occasion:o?o.label:'', florist:f?f.name:'',
+        date:S.date?`${S.date} июля`:'', slot:S.slot||'', phone:tgUser.phone||'' }
+    });
+  }catch(e){ /* offline: всё равно показываем успех */ }
+  S.confirmed=true; S.visits++; renderBuild();
+}
+
+/* =====================================================================
+ *  PROFILE / LOYALTY
+ * ===================================================================== */
+function renderProfile(){
+  const s=$('screen-profile');
+  const pts=CONFIG.userPoints; const progress=(pts-1200)/(2800-1200);
+  s.innerHTML=`
+    <div class="scr-head"><p class="eyebrow anim-title" style="margin-bottom:6px">${esc(CONFIG.brand)} · ПРОФИЛЬ</p>
+      <h1 class="h-big anim-title" style="font-size:38px">Анна Петрова</h1></div>
+    <div class="anim-1" style="margin:0 16px;border-radius:16px;overflow:hidden;position:relative;height:132px;background:var(--dark)">
+      <div style="position:relative;z-index:1;height:100%;display:flex;align-items:center;gap:20px;padding:0 24px">
+        <div style="width:54px;height:54px;border-radius:50%;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 2px var(--gold)"><img src="${CONFIG.userPhoto}" style="width:100%;height:100%;object-fit:cover" alt=""></div>
+        <div><p class="eyebrow" style="letter-spacing:4px;margin-bottom:4px">УРОВЕНЬ OLIVE</p>
+        <p class="h-big" style="font-size:34px;color:var(--beige)">${pts}</p>
+        <p style="font-size:11px;margin-top:2px;color:rgba(240,237,230,.45)">баллов лояльности</p></div>
+      </div>
+    </div>
+    <div class="card anim-2" style="margin:12px 16px;padding:20px">
+      <p style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:24px">Путь к Blossom</p>
+      <div style="position:relative">
+        <div style="position:absolute;top:11px;left:12px;right:12px;height:3px;border-radius:99px;background:rgba(31,44,39,.1)"></div>
+        <div style="position:absolute;top:11px;left:12px;width:calc(${progress*86}%);height:3px;border-radius:99px;background:var(--emerald)"></div>
+        <div style="display:flex;justify-content:space-between;position:relative;z-index:1">
+        ${CONFIG.levels.map(l=>{const reached=pts>=l.min;return `<div style="display:flex;flex-direction:column;align-items:center">
+          <div style="width:24px;height:24px;border-radius:50%;border:2px solid ${reached?'var(--emerald)':'rgba(31,44,39,.15)'};background:${reached?'var(--emerald)':'var(--cream)'};display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px">${reached&&!l.current?'✓':''}</div>
+          <p style="font-size:11px;font-weight:600;margin-top:8px;color:${l.current?'var(--emerald)':reached?'var(--dark)':'rgba(31,44,39,.3)'}">${l.name}</p>
+          <p style="font-size:9px;color:rgba(31,44,39,.3)">${l.range}</p></div>`}).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="anim-3" style="margin:0 16px 12px">
+      <p style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:10px">Привилегии Olive</p>
+      ${[['🎁','Скидка 10% на все заказы'],['🚚','Бесплатная доставка от 3 000 ₽'],['✂️','Приоритетный выбор флориста']]
+        .map(b=>`<div class="benefit"><span style="font-size:18px">${b[0]}</span><span style="font-size:13px;font-weight:500;color:var(--dark)">${b[1]}</span></div>`).join('')}
+    </div>`;
+}
+
+/* =====================================================================
+ *  CONTACTS
+ * ===================================================================== */
+function renderContacts(){
+  const s=$('screen-contacts');
+  s.innerHTML=`
+    <div class="scr-head"><p class="eyebrow anim-title" style="margin-bottom:6px">${esc(CONFIG.brand)} · СВЯЗЬ</p>
+      <h1 class="h-big anim-title" style="font-size:38px">Контакты</h1>
+      <p style="font-size:13px;color:var(--muted);margin-top:8px" class="anim-1">Быстрая связь с мастерской и флористами</p></div>
+    <div style="padding:8px 16px 0" class="anim-1" id="contacts-shop"></div>
+    <div style="padding:20px 24px 8px"><p style="font-size:13px;font-weight:600;color:var(--dark)" class="anim-2">Ваши флористы</p></div>
+    <div style="padding:0 16px 24px" class="anim-2" id="contacts-florists"></div>`;
+
+  $('contacts-shop').innerHTML=CONFIG.contacts.map(c=>{
+    const tag=(c.href&&c.href!=='#')?'a':'div';
+    const attr=(c.href&&c.href!=='#')?`href="${c.href}" target="_blank" rel="noopener"`:'';
+    return `<${tag} class="contact-item" ${attr}><div class="contact-ico">${c.icon}</div>
+      <div><h4>${esc(c.label)}</h4><p>${esc(c.sub)}</p></div></${tag}>`;
+  }).join('');
+
+  $('contacts-florists').innerHTML=CONFIG.florists.map(f=>`
+    <a class="contact-item" href="${f.telegram}" target="_blank" rel="noopener">
+      <div style="width:46px;height:46px;border-radius:12px;overflow:hidden;flex-shrink:0"><img src="${f.img}" style="width:100%;height:100%;object-fit:cover" alt=""></div>
+      <div style="flex:1"><h4>${esc(f.name)}</h4><p>${esc(f.spec)}</p></div>
+      <span style="font-size:12px;color:var(--emerald)">Написать →</span></a>`).join('');
+}
+
+/* =====================================================================
+ *  FLORIST PROFILE (detail)
+ * ===================================================================== */
+const PORTFOLIO=[
+  'https://images.unsplash.com/photo-1490750967868-88df5691cc64?w=240&h=240&fit=crop&auto=format',
+  'https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=240&h=240&fit=crop&auto=format',
+  'https://images.unsplash.com/photo-1455659817273-f96807779a8a?w=240&h=240&fit=crop&auto=format',
+  'https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?w=240&h=240&fit=crop&auto=format',
+  'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=240&h=240&fit=crop&auto=format',
+];
+function renderFlorist(){
+  const f=S.profileFlorist; const s=$('screen-florist');
+  s.innerHTML=`
+    <div class="fp-hero"><img src="${f.img}" alt=""><div class="tint"></div><div class="grad"></div>
+      <button class="fp-back" onclick="navigate('home')">←</button>
+      <p class="fp-spec-side">${esc(f.spec.toUpperCase())}</p>
+      <div class="fp-name"><p class="eyebrow" style="letter-spacing:5px;margin-bottom:8px">ФЛОРИСТ · ${esc(f.exp.toUpperCase())} ОПЫТА</p>
+        <h1 style="font-size:40px;font-family:var(--clash);font-weight:700;color:#fff;line-height:1">${esc(f.name)}</h1>
+        <p style="font-size:14px;margin-top:4px;color:var(--gold)">${esc(f.spec)}</p></div>
+    </div>
+    <div style="padding:20px 24px;border-bottom:1px solid var(--line)">
+      <p style="font-size:16px;line-height:1.6;font-weight:300;font-style:italic;color:var(--dark)">“${esc(f.quote)}”</p></div>
+    <div class="fp-stats">
+      ${[[f.rating,'Рейтинг'],[f.reviews,'Отзывов'],[f.exp,'Опыта']].map(st=>`<div class="fp-stat">
+        <p style="font-size:24px;font-family:var(--clash);font-weight:700;color:var(--emerald)">${st[0]}</p>
+        <p style="font-size:11px;margin-top:4px;color:var(--muted)">${st[1]}</p></div>`).join('')}
+    </div>
+    <div style="margin-top:20px"><p style="padding:0 24px;font-size:13px;font-weight:600;color:var(--dark);margin-bottom:12px">Портфолио</p>
+      <div class="portfolio">${PORTFOLIO.map(src=>`<div class="pit"><img src="${src}" alt=""></div>`).join('')}</div></div>
+    <div style="padding:24px 16px">
+      <a class="contact-item" href="${f.telegram}" target="_blank" rel="noopener" style="margin-bottom:12px">
+        <div class="contact-ico">💬</div><div><h4>Написать в Telegram</h4><p>Обсудить букет напрямую</p></div></a>
+      <a class="contact-item" href="tel:${f.phone}" style="margin-bottom:16px">
+        <div class="contact-ico">📞</div><div><h4>${esc(f.phone)}</h4><p>Позвонить флористу</p></div></a>
+      <button class="primary-btn" onclick="navigate('build')">Заказать у ${esc(f.name.split(' ')[0])}</button>
+    </div>`;
+}
+
+/* =====================================================================
+ *  API
+ * ===================================================================== */
+async function apiFetch(method, path, body){
+  if(!CONFIG.backendUrl) throw new Error('no backend');
+  const url=CONFIG.backendUrl+(path||'');
+  if(method==='GET'){
+    const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json();
+  }
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('HTTP '+r.status); return r.json();
+}
+
+/* =====================================================================
+ *  MODAL + TOAST
+ * ===================================================================== */
+function closeModal(e){ if(e===true||e.target===$('modal')) $('modal').classList.remove('open'); }
+let _tt;
+function showToast(msg,type='ok'){
+  $('toast-ico').textContent=type==='err'?'!':'✓';
+  $('toast-ico').style.color=type==='err'?'#ff8a8a':'var(--gold)';
+  $('toast-msg').textContent=msg;
+  $('toast').classList.add('visible');
+  clearTimeout(_tt); _tt=setTimeout(()=>$('toast').classList.remove('visible'),4000);
+}
+
+/* =====================================================================
+ *  START
+ * ===================================================================== */
+document.addEventListener('DOMContentLoaded',()=>{
+  runSplash();
+  renderHome();
+});
+</script>
+</body>
+</html>
