@@ -214,6 +214,24 @@ input,select,textarea{font-family:inherit}
 .form-input,.form-select{width:100%;background:var(--beige);border:1px solid var(--line);border-radius:10px;
   padding:12px 14px;color:var(--dark);font-size:14px;margin-bottom:14px;outline:none;-webkit-appearance:none}
 .form-input:focus,.form-select:focus{border-color:var(--emerald)}
+.form-textarea{width:100%;background:var(--beige);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--dark);font-size:14px;margin-bottom:14px;outline:none;resize:none;height:64px}
+.form-textarea:focus{border-color:var(--emerald)}
+
+/* ── BOUQUET DETAIL (modal) ── */
+.bq-detail-photo{width:100%;height:320px;object-fit:cover;border-radius:18px;margin-bottom:16px}
+.bq-detail-badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--dark);background:var(--gold);padding:4px 12px;border-radius:99px;margin-bottom:10px}
+
+/* ── QUICK ORDER ── */
+.qo-date-row{display:flex;gap:8px;overflow-x:auto;margin-bottom:20px;padding-bottom:4px}
+.qo-summary{display:flex;align-items:center;gap:14px;background:var(--beige);border-radius:14px;padding:14px;margin-bottom:20px}
+.qo-summary img{width:56px;height:56px;border-radius:12px;object-fit:cover;flex-shrink:0}
+
+/* Confirmation animation */
+@keyframes checkPop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes ringExpand{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.9);opacity:0}}
+.confirm-check{animation:checkPop .5s cubic-bezier(.34,1.56,.64,1) both}
+.confirm-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--emerald);animation:ringExpand 1s ease-out forwards}
+.confirm-ring.d2{animation-delay:.3s}
 </style>
 </head>
 <body>
@@ -294,7 +312,7 @@ const CONFIG = {
   userPhoto: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&auto=format',
 
   // Backend (Google Apps Script Web App). Вставишь свой URL после деплоя.
-  backendUrl: 'https://script.google.com/macros/s/AKfycbwucizcZebYhXNg1MO6hf0zY1UUHzp3md0LgVxbcxSe6a5jrvKjpM2OF-YotERxisrNIw/exec',
+  backendUrl: '',
 
   // Флористы
   florists: [
@@ -384,6 +402,9 @@ const S = {
   profileFlorist:CONFIG.florists[0],
   // build flow
   buildStep:1, occasion:null, floristId:null, date:null, slot:null, confirmed:false,
+  // quick order (тап по букету)
+  quickBouquet:null, qoDate:null, qoSlot:null, qoAddress:'', qoSubmitting:false, qoConfirmed:false,
+  orderInFlight:false,  // защита от повторных тапов
   // rate flow
   pendingRate:null,   // {booking_id, photo, florist, order_label}
   rateChoice:null,    // 'like' | 'dislike'
@@ -423,6 +444,8 @@ function runSplash(){
  * ===================================================================== */
 function navigate(name){
   if(name===S.screen && name!=='florist') return;
+  // Если уходим с быстрого заказа на ДРУГУЮ вкладку (не build) — сбрасываем его состояние
+  if(S.quickBouquet && name!=='build'){ S.quickBouquet=null; S.qoConfirmed=false; S.orderInFlight=false; }
   $('screen-'+S.screen)?.classList.remove('active');
   $('screen-'+name)?.classList.add('active');
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.toggle('active',b.dataset.screen===name));
@@ -515,7 +538,7 @@ function renderHome(){
 
   const fl=$('home-featured');
   fl.innerHTML=CONFIG.featured.map(b=>`
-    <button class="florist-card" onclick="navigate('catalog')">
+    <button class="florist-card" onclick='openBouquet(${JSON.stringify(b)})'>
       <div class="florist-photo" style="height:150px"><img src="${b.img}" alt="" style="filter:none">
         <div class="grad"></div>
         ${b.badge?`<span style="position:absolute;top:10px;left:10px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--dark);background:var(--gold);padding:4px 10px;border-radius:99px">${esc(b.badge)}</span>`:''}
@@ -552,14 +575,14 @@ function renderCatalog(){
   [[0,1,2],[3,4,5]].forEach((group,gi)=>{
     const lg=c[group[0]], sm=[c[group[1]],c[group[2]]].filter(Boolean);
     if(!lg) return;
-    html+=`<div class="cat-lg anim-${gi+1}"><img src="${lg.img}" alt=""><div class="grad"></div>
+    html+=`<div class="cat-lg anim-${gi+1}" style="cursor:pointer" onclick='openBouquet(${JSON.stringify(lg)})'><img src="${lg.img}" alt=""><div class="grad"></div>
       <div class="body"><p style="font-size:21px;font-family:var(--clash);font-weight:700;color:#fff;line-height:1.1">${esc(lg.name)}</p>
       <p style="font-size:12px;margin-top:2px;color:var(--gold)">${esc(lg.desc)}</p>
       <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:12px">
         <p style="font-size:20px;font-family:var(--clash);font-weight:700;color:#fff">${money(lg.price)} ₽</p>
         <p style="font-size:11px;color:rgba(240,237,230,.55)">${esc(lg.fresh)}</p></div></div></div>
       <div style="display:flex;gap:12px;margin-bottom:12px">`;
-    sm.forEach(it=>{ html+=`<div class="cat-sm"><div class="ph"><img src="${it.img}" alt=""></div>
+    sm.forEach(it=>{ html+=`<div class="cat-sm" style="cursor:pointer" onclick='openBouquet(${JSON.stringify(it)})'><div class="ph"><img src="${it.img}" alt=""></div>
       <div style="padding:12px"><p style="font-size:13px;font-weight:600;color:var(--dark);line-height:1.15">${esc(it.name)}</p>
       <p style="font-size:11px;margin-top:2px;color:var(--muted);line-height:1.2">${esc(it.desc)}</p>
       <p style="font-size:15px;font-weight:700;margin-top:8px;color:var(--emerald)">${money(it.price)} ₽</p></div></div>`; });
@@ -660,9 +683,138 @@ async function submitRate(comment){
 }
 
 /* =====================================================================
+ *  BOUQUET DETAIL + QUICK ORDER (тап по букету)
+ * ===================================================================== */
+function openBouquet(b){
+  S.quickBouquet=b;
+  const body=$('modal-body');
+  body.innerHTML=`
+    <div class="modal-handle"></div>
+    <img class="bq-detail-photo" src="${b.img}" alt="">
+    ${b.badge?`<span class="bq-detail-badge">${esc(b.badge)}</span>`:''}
+    <h2 style="font-size:26px;font-family:var(--clash);font-weight:700;color:var(--dark);line-height:1.1;margin-bottom:6px">${esc(b.name)}</h2>
+    <p style="font-size:13px;color:var(--muted2);line-height:1.5;margin-bottom:12px">${esc(b.desc)}</p>
+    ${b.fresh?`<p style="font-size:12px;color:var(--muted);margin-bottom:16px">🌿 Свежесть: ${esc(b.fresh)}</p>`:''}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <span style="font-size:13px;color:var(--muted)">Цена</span>
+      <span style="font-size:28px;font-family:var(--clash);font-weight:700;color:var(--emerald)">${money(b.price)} ₽</span>
+    </div>
+    <button class="primary-btn" onclick="startQuickOrder()">Заказать этот букет</button>`;
+  $('modal').classList.add('open');
+}
+
+function startQuickOrder(){
+  $('modal').classList.remove('open');
+  S.qoDate=null; S.qoSlot=null; S.qoAddress=''; S.qoConfirmed=false;
+  navigate('build');
+  // build screen отрисует быстрый заказ, т.к. quickBouquet задан
+}
+
+function renderQuickOrder(s){
+  const b=S.quickBouquet;
+  if(S.qoConfirmed){ renderQuickConfirmed(s); return; }
+  const now=new Date(); const dn=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  const dates=[];
+  for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()+i);dates.push({day:i===0?'Сег':dn[d.getDay()],date:d.getDate()});}
+  s.innerHTML=`
+    <div class="scr-head" style="padding-bottom:12px;display:flex;align-items:center;gap:12px">
+      <button onclick="exitQuickOrder()" style="width:40px;height:40px;border-radius:12px;background:var(--beige);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--dark);flex-shrink:0">←</button>
+      <div><p class="eyebrow" style="margin-bottom:4px">БЫСТРЫЙ ЗАКАЗ</p>
+      <h1 class="h-big" style="font-size:26px">Оформление</h1></div>
+    </div>
+    <div style="padding:0 16px">
+      <div class="qo-summary anim-1">
+        <img src="${b.img}" alt="">
+        <div style="flex:1;min-width:0"><p style="font-size:15px;font-weight:600;color:var(--dark)">${esc(b.name)}</p>
+        <p style="font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.desc)}</p></div>
+        <span style="font-size:17px;font-family:var(--clash);font-weight:700;color:var(--emerald);white-space:nowrap">${money(b.price)} ₽</span>
+      </div>
+      <p style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:10px" class="anim-1">Дата доставки</p>
+      <div class="qo-date-row anim-1">
+        ${dates.map(d=>`<button class="date-cell${S.qoDate===d.date?' sel':''}" onclick="qoPickDate(${d.date})">
+          <span style="font-size:9px;font-weight:500;text-transform:uppercase;color:${S.qoDate===d.date?'rgba(240,237,230,.55)':'var(--muted)'}">${d.day}</span>
+          <span style="font-size:22px;font-family:var(--clash);font-weight:700;margin-top:2px;color:${S.qoDate===d.date?'var(--cream)':'var(--dark)'}">${d.date}</span></button>`).join('')}
+      </div>
+      <p style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:10px" class="anim-2">Время</p>
+      <div class="slot-grid anim-2" style="margin-bottom:20px">
+        ${CONFIG.deliverySlots.map(sl=>`<button class="slot-cell${S.qoSlot===sl?' sel':''}" onclick="qoPickSlot('${sl}')">${sl}</button>`).join('')}
+      </div>
+      <p style="font-size:12px;font-weight:500;color:var(--muted);margin-bottom:10px" class="anim-3">Адрес доставки</p>
+      <textarea class="form-textarea anim-3" id="qo-address" placeholder="Улица, дом, квартира, комментарий курьеру" oninput="S.qoAddress=this.value">${esc(S.qoAddress)}</textarea>
+      <button class="primary-btn anim-3" id="qo-submit" onclick="submitQuickOrder()" style="margin-bottom:24px" ${(!S.qoDate||!S.qoSlot)?'disabled':''}>
+        ${(!S.qoDate||!S.qoSlot)?'Выберите дату и время':'Оформить заказ · '+money(b.price)+' ₽'}
+      </button>
+    </div>`;
+}
+function qoPickDate(d){ S.qoDate=d; renderBuild(); }
+function qoPickSlot(sl){ S.qoSlot=sl; renderBuild(); }
+function exitQuickOrder(){ S.quickBouquet=null; navigate('home'); }
+
+async function submitQuickOrder(){
+  // Защита от повторных тапов
+  if(S.qoSubmitting || S.orderInFlight){ return; }
+  if(!S.qoDate || !S.qoSlot){ showToast('Выберите дату и время','err'); return; }
+  S.qoSubmitting=true; S.orderInFlight=true;
+
+  const btn=$('qo-submit');
+  if(btn){ btn.disabled=true; btn.textContent='Оформляем…'; }
+
+  const b=S.quickBouquet;
+  const bookingId=`BK_${Date.now()}_${Math.random().toString(36).substr(2,5).toUpperCase()}`;
+  try{
+    const res=await apiFetch('POST',null,{
+      event:'order_submit', user_id:userId,
+      username:tgUser.username||'', first_name:tgUser.first_name||'',
+      timestamp:new Date().toISOString(),
+      order:{ booking_id:bookingId, occasion:b.name, florist:'', bouquet:b.name,
+        price:b.price, date:S.qoDate?`${S.qoDate} июля`:'', slot:S.qoSlot||'',
+        address:S.qoAddress||'', phone:tgUser.phone||'' }
+    });
+    // Если сервер отклонил дубль
+    if(res && res.status==='duplicate'){
+      S.qoSubmitting=false; S.orderInFlight=false;
+      if(btn){ btn.disabled=false; btn.textContent='Оформить заказ · '+money(b.price)+' ₽'; }
+      showToast(res.message||'У вас уже есть активный заказ','err');
+      return;
+    }
+  }catch(e){ /* offline — всё равно показываем успех */ }
+
+  S.qoSubmitting=false;
+  S.qoConfirmed=true;
+  // orderInFlight сбросим только когда пользователь уйдёт с экрана — чтобы не спамил
+  renderBuild();
+}
+
+function renderQuickConfirmed(s){
+  const b=S.quickBouquet;
+  s.innerHTML=`
+    <div style="padding:56px 20px;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+      <div style="position:relative;width:96px;height:96px;margin-bottom:28px;display:flex;align-items:center;justify-content:center">
+        <div class="confirm-ring"></div><div class="confirm-ring d2"></div>
+        <div class="confirm-check" style="width:80px;height:80px;border-radius:50%;background:var(--emerald);display:flex;align-items:center;justify-content:center;font-size:38px;color:#fff">✓</div>
+      </div>
+      <p class="eyebrow" style="margin-bottom:10px">ЗАКАЗ ОФОРМЛЕН</p>
+      <h1 class="h-big" style="font-size:30px;margin-bottom:8px">Спасибо!</h1>
+      <p style="font-size:14px;color:var(--muted2);line-height:1.5;max-width:280px;margin-bottom:8px">
+        «${esc(b.name)}» принят в работу. Флорист соберёт букет и пришлёт вам фото на оценку прямо в этот чат.</p>
+      <div style="background:var(--beige);border-radius:14px;padding:16px;margin:20px 0;width:100%;max-width:320px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;color:var(--muted)">Доставка</span><span style="font-size:13px;font-weight:500;color:var(--dark)">${S.qoDate} июля, ${S.qoSlot}</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--muted)">Сумма</span><span style="font-size:13px;font-weight:600;color:var(--emerald)">${money(b.price)} ₽</span></div>
+      </div>
+      <button class="primary-btn" style="max-width:320px" onclick="finishQuickOrder()">Готово</button>
+    </div>`;
+}
+function finishQuickOrder(){
+  S.quickBouquet=null; S.qoConfirmed=false; S.orderInFlight=false;
+  navigate('home');
+}
+
+/* =====================================================================
  *  BUILD / ORDER
  * ===================================================================== */
 function renderBuild(){
+  // Если пришли по тапу на букет — показываем быстрый заказ
+  if(S.quickBouquet){ renderQuickOrder($('screen-build')); return; }
   const s=$('screen-build');
   if(S.confirmed){ renderBuildConfirmed(s); return; }
   s.innerHTML=`
@@ -756,22 +908,33 @@ function renderBuildConfirmed(s){
       <button class="primary-btn" onclick="resetBuild()">Новый заказ</button>
     </div>`;
 }
-function resetBuild(){S.confirmed=false;S.buildStep=1;S.occasion=null;S.floristId=null;S.date=null;S.slot=null;renderBuild();}
+function resetBuild(){S.confirmed=false;S.buildStep=1;S.occasion=null;S.floristId=null;S.date=null;S.slot=null;S.orderInFlight=false;renderBuild();}
 
 async function submitOrder(){
+  if(S.orderInFlight) return;              // защита от повторных тапов
+  S.orderInFlight=true;
+  const btn=document.querySelector('#screen-build .primary-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Оформляем…'; }
+
   const f=CONFIG.florists.find(x=>x.id===S.floristId);
   const o=CONFIG.occasions.find(x=>x.id===S.occasion);
   const bookingId=`BK_${Date.now()}_${Math.random().toString(36).substr(2,5).toUpperCase()}`;
   try{
-    await apiFetch('POST',null,{
+    const res=await apiFetch('POST',null,{
       event:'order_submit', user_id:userId,
       username:tgUser.username||'', first_name:tgUser.first_name||'',
       timestamp:new Date().toISOString(),
       order:{ booking_id:bookingId, occasion:o?o.label:'', florist:f?f.name:'',
         date:S.date?`${S.date} июля`:'', slot:S.slot||'', phone:tgUser.phone||'' }
     });
+    if(res && res.status==='duplicate'){
+      S.orderInFlight=false;
+      if(btn){ btn.disabled=false; btn.textContent='Подтвердить заказ'; }
+      showToast(res.message||'У вас уже есть активный заказ','err');
+      return;
+    }
   }catch(e){ /* offline: всё равно показываем успех */ }
-  S.confirmed=true; S.visits++; renderBuild();
+  S.confirmed=true; S.visits++; S.orderInFlight=false; renderBuild();
 }
 
 /* =====================================================================
